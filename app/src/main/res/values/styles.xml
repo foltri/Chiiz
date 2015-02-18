@@ -3,6 +3,17 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
+    </style>
+
+    <color name="chiiz_color">#ffa500</color>
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/chiiz_color</item>
+        <item name="background">@color/chiiz_color</item>
+        <item name="android:icon">@drawable/face</item>
+        <item name="icon">@drawable/face</item>
+        <item name="displayOptions">useLogo|showHome|showTitle</item>
     </style>
 
 </resources>
