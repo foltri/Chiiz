@@ -1,19 +1,25 @@
 package com.example.folti.chiiz;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-public class PeopleNearby extends ActionBarActivity {
+
+public class PeopleNearby extends ActionBarActivity implements GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private Marker markers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +69,12 @@ public class PeopleNearby extends ActionBarActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
+        mMap.setOnMarkerClickListener(this);
         mMap.setMyLocationEnabled(true);
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(59.3294, 18.0686), 13));
+        markers = mMap.addMarker(new MarkerOptions().position(new LatLng(59.324500, 18.068698)).icon(BitmapDescriptorFactory.fromResource(R.drawable.th_pekka)));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(59.337240, 18.067411)).icon(BitmapDescriptorFactory.fromResource(R.drawable.th_lisa)));
+
     }
 
 
@@ -88,5 +98,15 @@ public class PeopleNearby extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        if(marker.equals(markers)) {
+            Intent intent = new Intent(this, PhotoTarget.class);
+            //intent.putExtra(EXTRA_MESSAGE, message);
+            startActivity(intent);
+        }
+        return false;
     }
 }
