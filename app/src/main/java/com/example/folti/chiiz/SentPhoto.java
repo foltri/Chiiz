@@ -32,7 +32,7 @@ public class SentPhoto extends ActionBarActivity {
 
         Intent intent = getIntent();
         Uri path = intent.getParcelableExtra("photoPath");
-        Toast.makeText(this, "Video saved to:\n" + path.toString(), Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "Video saved to:\n" + path.toString(), Toast.LENGTH_LONG).show();
 
         ImageView iv = (ImageView) findViewById(R.id.sentPhoto);
 
