@@ -72,4 +72,6 @@ public class SentPhoto extends ActionBarActivity {
         Intent intent = new Intent(SentPhoto.this, PeopleNearby.class);
         startActivity(intent);
     }
+
+
 }

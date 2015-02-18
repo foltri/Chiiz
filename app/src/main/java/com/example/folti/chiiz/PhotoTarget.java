@@ -62,7 +62,7 @@ public class PhotoTarget extends ActionBarActivity {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE); // create a file to save the image
-        //intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); // set the image file name
 
         // start the image capture Intent
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
@@ -79,7 +79,7 @@ public class PhotoTarget extends ActionBarActivity {
         // using Environment.getExternalStorageState() before doing this.
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+                Environment.DIRECTORY_PICTURES), "Chiiz");
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
@@ -119,6 +119,7 @@ public class PhotoTarget extends ActionBarActivity {
                 Intent intent = new Intent(PhotoTarget.this, SentPhoto.class);
                 String message = fileUri.toString();
                 intent.putExtra("photoPath", fileUri);
+                galleryAddPic();
 
                 startActivity(intent);
 
@@ -140,6 +141,14 @@ public class PhotoTarget extends ActionBarActivity {
                 // Video capture failed, advise user
             }
         }
+    }
+
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(fileUri.getPath());
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
     }
 
 }
