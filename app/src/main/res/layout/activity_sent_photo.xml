@@ -8,12 +8,13 @@
 
     <ImageView
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/sentPhoto"/>
 
     <TextView android:text="@string/userLocationTime" android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView2" />
+        android:id="@+id/textView2"
+        android:layout_below="@id/sentPhoto"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -21,8 +22,8 @@
         android:text="OK"
         android:id="@+id/OKbutton"
         android:layout_marginBottom="52dp"
-        android:layout_alignBottom="@+id/sentPhoto"
         android:layout_centerHorizontal="true"
-        android:onClick="OKbuttonClicked" />
+        android:onClick="OKbuttonClicked"
+        android:layout_below="@id/textView2"/>
 
 </RelativeLayout>
