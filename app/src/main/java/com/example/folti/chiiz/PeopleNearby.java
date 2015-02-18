@@ -69,7 +69,6 @@ public class PeopleNearby extends ActionBarActivity implements
     protected String mLastUpdateTime;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,8 +129,10 @@ public class PeopleNearby extends ActionBarActivity implements
             updateUI();
         }
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
-                mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 13));
+        if (mCurrentLocation != null) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
+                    mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 13));
+        }
 
 
         this.startLocationUpdates();
