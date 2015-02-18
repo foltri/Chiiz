@@ -103,7 +103,7 @@ public class PeopleNearby extends ActionBarActivity implements GoogleMap.OnMarke
     @Override
     public boolean onMarkerClick(Marker marker) {
         if(marker.equals(markers)) {
-            Intent intent = new Intent(this, PhotoTarget.class);
+            Intent intent = new Intent(PeopleNearby.this, PhotoTarget.class);
             //intent.putExtra(EXTRA_MESSAGE, message);
             startActivity(intent);
         }

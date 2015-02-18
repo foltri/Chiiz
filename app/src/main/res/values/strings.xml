@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">People nearby</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="userLocationTime">Pekka in Stockholm, 2015</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_photo_target">PhotoTarget</string>
     <string name="title_activity_sent_photo">SentPhoto</string>

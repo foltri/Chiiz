@@ -112,9 +112,16 @@ public class PhotoTarget extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                Uri blabla = data.getData();
+
                 // Image captured and saved to fileUri specified in the Intent
-                Toast.makeText(this, "Image saved to:\n" +fileUri, Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Image saved to:\n" +fileUri, Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(PhotoTarget.this, SentPhoto.class);
+                String message = fileUri.toString();
+                intent.putExtra("photoPath", fileUri);
+
+                startActivity(intent);
+
             } else if (resultCode == RESULT_CANCELED) {
                 // User cancelled the image capture
             } else {
