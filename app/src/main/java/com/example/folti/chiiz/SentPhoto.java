@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,10 +18,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.firebase.client.Firebase;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class SentPhoto extends ActionBarActivity {
@@ -29,6 +35,10 @@ public class SentPhoto extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sent_photo);
+
+        //Firebase init
+        Firebase.setAndroidContext(this);
+        Firebase fireRef = new Firebase("https://sweltering-torch-662.firebaseio.com/chiiz");
 
         Intent intent = getIntent();
         Uri path = intent.getParcelableExtra("photoPath");
@@ -43,7 +53,21 @@ public class SentPhoto extends ActionBarActivity {
             e.printStackTrace();    //it seems like the image is not saved..
         }
         iv.setImageBitmap(bitmap);
+
+        //Uploading image to firebase
+        ByteArrayOutputStream bYtE = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, bYtE);
+        //bmp.recycle();
+        byte[] byteArray = bYtE.toByteArray();
+        String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        Map<String, String> post1 = new HashMap<String, String>();
+        post1.put("name", "Pekka");
+        post1.put("img", imageFile);
+        fireRef.push().setValue(post1);
     }
+
+
 
 
     @Override
@@ -62,6 +86,11 @@ public class SentPhoto extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_myphotos) {
+            Intent intent = new Intent(SentPhoto.this, MyPhotos.class);
+            startActivity(intent);
             return true;
         }
 

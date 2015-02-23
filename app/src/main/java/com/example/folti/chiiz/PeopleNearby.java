@@ -266,6 +266,11 @@ public class PeopleNearby extends ActionBarActivity implements
         if (id == R.id.action_settings) {
             return true;
         }
+        if (id == R.id.action_myphotos) {
+            Intent intent = new Intent(PeopleNearby.this, MyPhotos.class);
+            startActivity(intent);
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
