@@ -27,7 +27,7 @@ public class MyPhotos extends ActionBarActivity {
 
         //Firebase init
         Firebase.setAndroidContext(this);
-        Firebase fireRef = new Firebase("https://sweltering-torch-662.firebaseio.com/chiiz");
+        Firebase fireRef = new Firebase("https://burning-inferno-7965.firebaseio.com/chiiz");
 
         fireRef.addChildEventListener(new ChildEventListener() {
             // Retrieve new posts as they are added to Firebase

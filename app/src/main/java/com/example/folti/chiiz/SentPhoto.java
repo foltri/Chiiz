@@ -38,7 +38,7 @@ public class SentPhoto extends ActionBarActivity {
 
         //Firebase init
         Firebase.setAndroidContext(this);
-        Firebase fireRef = new Firebase("https://sweltering-torch-662.firebaseio.com/chiiz");
+        Firebase fireRef = new Firebase("https://burning-inferno-7965.firebaseio.com/chiiz");
 
         Intent intent = getIntent();
         Uri path = intent.getParcelableExtra("photoPath");
