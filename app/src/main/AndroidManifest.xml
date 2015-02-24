@@ -48,8 +48,8 @@
         </activity>
         <activity
             android:name=".SentPhoto"
-            android:label="Pekka&apos;s Photo"
-            android:parentActivityName=".PhotoTarget" >
+            android:label="Pekka's Photo"
+            android:parentActivityName=".PhotoTarget">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.folti.chiiz.PhotoTarget" />

@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
@@ -43,6 +44,8 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class PhotoTarget extends ActionBarActivity implements
@@ -59,6 +62,7 @@ public class PhotoTarget extends ActionBarActivity implements
     private String user_id;
     private LatLng user_location = null;
     private Firebase fireRef;
+    private Firebase profileRef;
     private User me;
 
     @Override
@@ -74,15 +78,19 @@ public class PhotoTarget extends ActionBarActivity implements
         buildGoogleApiClient();
         setUpMapIfNeeded();
 
-        fireRef = new Firebase("https://burning-inferno-7965.firebaseio.com/users/" + user_id);
+        fireRef = new Firebase("https://burning-inferno-7965.firebaseio.com/");
+        profileRef = fireRef.child("users/" + user_id);
 
         me = new User("jasper");
 
-        ValueEventListener users = fireRef.addValueEventListener(new ValueEventListener() {
+        ValueEventListener users = profileRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot profile) {
                 //System.out.println(snapshot.getValue());  //prints "Do you have data? You'll love Firebase."
                 user_location = new LatLng(profile.child("position/lat").getValue(Double.class), profile.child("position/lng").getValue(Double.class));
+                String user_name = profile.child("name").getValue(String.class);
+                ((TextView)findViewById(R.id.textView)).setText("Route to " + user_name);
+                setTitle(user_name);
             }
 
             @Override
@@ -274,7 +282,7 @@ public class PhotoTarget extends ActionBarActivity implements
                                 BitmapDescriptorFactory.HUE_GREEN)));
 
                 mMap.addMarker(new MarkerOptions().position(end)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.th_pekka)));
+                        .icon(BitmapDescriptorFactory.fromResource(getResources().getIdentifier("th_" + user_id, "drawable", getPackageName()))));
             }
         });
 
@@ -379,6 +387,13 @@ public class PhotoTarget extends ActionBarActivity implements
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         Log.w(TAG, "location changed");
+
+        Firebase locationRef = fireRef.child("users/" + me.getId() + "/position");
+        Map<String, String> post1 = new HashMap<String, String>();
+        post1.put("lat", ""+location.getLatitude());
+        post1.put("lng", ""+location.getLongitude());
+        locationRef.setValue(post1);
+
         this.drawDirection();
         //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
     }

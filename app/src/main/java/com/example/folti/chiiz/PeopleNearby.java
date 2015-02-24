@@ -99,7 +99,7 @@ public class PeopleNearby extends ActionBarActivity implements
             public void onDataChange(DataSnapshot users) {
                 //System.out.println(snapshot.getValue());  //prints "Do you have data? You'll love Firebase."
                 for (DataSnapshot user : users.getChildren()) {
-                    if (user.getKey() != me.getId()) {
+                    if (!user.getKey().equals(me.getId())) {
                         if (mMap != null) {
                             int r = getResources().getIdentifier("th_" + user.getKey(), "drawable", getPackageName());
                             BitmapDescriptor b = BitmapDescriptorFactory.fromResource(r);
@@ -239,6 +239,13 @@ public class PeopleNearby extends ActionBarActivity implements
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+
+        Firebase locationRef = fireRef.child("users/" + me.getId() + "/position");
+        Map<String, String> post1 = new HashMap<String, String>();
+        post1.put("lat", ""+location.getLatitude());
+        post1.put("lng", ""+location.getLongitude());
+        locationRef.setValue(post1);
+
         updateUI();
     }
 
