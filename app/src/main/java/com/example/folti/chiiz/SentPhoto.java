@@ -54,7 +54,7 @@ public class SentPhoto extends ActionBarActivity {
         try {
             bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), path);
         } catch (IOException e) {
-            e.printStackTrace();    //it seems like the image is not saved..
+            e.printStackTrace();
         }
         iv.setImageBitmap(bitmap);
 

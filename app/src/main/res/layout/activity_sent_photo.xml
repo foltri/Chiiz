@@ -1,68 +1,87 @@
-
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:weightSum="3"
     tools:context="com.example.folti.chiiz.SentPhoto">
 
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_gravity="center_horizontal">
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/sentPhoto"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="2"
+        android:orientation="vertical">
 
-    <TextView android:text="@string/userLocationTime" android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView2"
-        android:layout_below="@id/sentPhoto"
-        android:layout_gravity="center_horizontal"/>
-</LinearLayout>
+        <ImageView
+            android:id="@+id/sentPhoto"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_horizontal" />
+    </LinearLayout>
 
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
         android:layout_weight="1"
-        android:layout_gravity="center_horizontal">
+        android:orientation="vertical"
+        android:weightSum="4">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Image sent!"
+            android:layout_height="0dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="20dp"
-            android:textSize="20dp"
-            />
+            android:layout_weight="1"
+            android:baselineAligned="false"
+            android:orientation="vertical">
 
-        <Button
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/userLocationTime" />
+
+
+
+            <!--android:layout_marginBottom="20dp"-->
+        </LinearLayout>
+
+        <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="OK"
-            android:id="@+id/OKbutton"
+            android:layout_height="0dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="3"
+            android:orientation="vertical">
 
-            android:layout_centerHorizontal="true"
-            android:onClick="OKbuttonClicked"
-            android:layout_below="@id/textView2"
-            android:layout_gravity="bottom|center_horizontal"/>
-            </LinearLayout>
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Image sent!"
+                android:textSize="20dp"
+                android:layout_gravity="center_horizontal" />
+
+
+            <Button
+                android:id="@+id/OKbutton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="OKbuttonClicked"
+                android:text="OK"
+                android:layout_alignParentBottom="false"
+                android:layout_alignParentRight="false"
+                android:layout_alignWithParentIfMissing="false"
+                android:layout_centerInParent="true" />
+
+        </RelativeLayout>
     </LinearLayout>
 </LinearLayout>
 
