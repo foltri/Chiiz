@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,18 +32,21 @@ import java.util.Map;
 
 public class SentPhoto extends ActionBarActivity {
 
+    private String user_id;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sent_photo);
 
-        //Firebase init
-        Firebase.setAndroidContext(this);
-        Firebase fireRef = new Firebase("https://burning-inferno-7965.firebaseio.com/chiiz");
-
         Intent intent = getIntent();
         Uri path = intent.getParcelableExtra("photoPath");
+        user_id = intent.getStringExtra("user_id");
         //Toast.makeText(this, "Video saved to:\n" + path.toString(), Toast.LENGTH_LONG).show();
+
+        //Firebase init
+        Firebase.setAndroidContext(this);
+        Firebase fireRef = new Firebase("https://burning-inferno-7965.firebaseio.com/photos/" + user_id);
 
         ImageView iv = (ImageView) findViewById(R.id.sentPhoto);
 
@@ -61,8 +65,10 @@ public class SentPhoto extends ActionBarActivity {
         byte[] byteArray = bYtE.toByteArray();
         String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
+        Log.w("firebase", "https://burning-inferno-7965.firebaseio.com/photos/" + user_id);
+
         Map<String, String> post1 = new HashMap<String, String>();
-        post1.put("name", "Pekka");
+        post1.put("timestamp", ""+(System.currentTimeMillis() / 1000L));
         post1.put("img", imageFile);
         fireRef.push().setValue(post1);
     }

@@ -2,6 +2,8 @@ package com.example.folti.chiiz;
 
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Color;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -17,33 +19,76 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.w3c.dom.Document;
+
 import java.io.File;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class PhotoTarget extends ActionBarActivity {
+public class PhotoTarget extends ActionBarActivity implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private Uri fileUri;
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
     private static final int CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE = 200;
-    private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+
+    private String user_id;
+    private LatLng user_location = null;
+    private Firebase fireRef;
+    private User me;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
+        user_id = intent.getStringExtra(PeopleNearby.EXTRA_USERID);
         setContentView(R.layout.activity_photo_target);
+
+        ImageView img= (ImageView) findViewById(R.id.imageView);
+        img.setImageResource(getResources().getIdentifier(user_id, "drawable", getPackageName()));
+
+        buildGoogleApiClient();
         setUpMapIfNeeded();
+
+        fireRef = new Firebase("https://burning-inferno-7965.firebaseio.com/users/" + user_id);
+
+        me = new User("jasper");
+
+        ValueEventListener users = fireRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot profile) {
+                //System.out.println(snapshot.getValue());  //prints "Do you have data? You'll love Firebase."
+                user_location = new LatLng(profile.child("position/lat").getValue(Double.class), profile.child("position/lng").getValue(Double.class));
+            }
+
+            @Override
+            public void onCancelled(FirebaseError error) {
+            }
+        });
     }
 
 
@@ -75,6 +120,7 @@ public class PhotoTarget extends ActionBarActivity {
     }
 
     public void takePicture(View view) {
+
         // Do something in response to button
         // create Intent to take a picture and return control to the calling application
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -84,6 +130,7 @@ public class PhotoTarget extends ActionBarActivity {
 
         // start the image capture Intent
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+
     }
 
     /** Create a file Uri for saving an image or video */
@@ -95,7 +142,6 @@ public class PhotoTarget extends ActionBarActivity {
     private static File getOutputMediaFile(int type){
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
-
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "Chiiz");
         // This location works best if you want the created images to be shared
@@ -128,6 +174,7 @@ public class PhotoTarget extends ActionBarActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
 
@@ -137,6 +184,7 @@ public class PhotoTarget extends ActionBarActivity {
                 Intent intent = new Intent(PhotoTarget.this, SentPhoto.class);
                 String message = fileUri.toString();
                 intent.putExtra("photoPath", fileUri);
+                intent.putExtra("user_id", user_id);
                 galleryAddPic();
 
                 startActivity(intent);
@@ -167,28 +215,33 @@ public class PhotoTarget extends ActionBarActivity {
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         this.sendBroadcast(mediaScanIntent);
+
     }
 
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p/>
-     * If it isn't installed {@link com.google.android.gms.maps.SupportMapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p/>
-     * A user can return to this FragmentActivity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-     * have been completely destroyed during this process (it is likely that it would only be
-     * stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-     * method in {@link #onResume()} to guarantee that it will be called.
-     */
+    /** google maps **/
+
+    protected static final String TAG = "location-updates-sample";
+    private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private Marker markers;
+    protected GoogleApiClient mGoogleApiClient;
+    protected Location mCurrentLocation;
+    protected LocationRequest mLocationRequest;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+
+    GoogleDirection gd;
+    Document mDoc;
+    private Boolean directionDrawn = false;
+
+    LatLng start = new LatLng(13.744246499553903, 100.53428772836924);
+    LatLng end = new LatLng(13.751279688694071, 100.54316081106663);
+
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
             // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map2))
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
@@ -204,10 +257,141 @@ public class PhotoTarget extends ActionBarActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        //mMap.setMyLocationEnabled(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(59.3294, 18.0686), 13));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(59.324500, 18.068698)));
+        mMap.setMyLocationEnabled(true);
+
+        gd = new GoogleDirection(this);
+
+        start = new LatLng(13.744246499553903, 100.53428772836924);
+        end = new LatLng(13.751279688694071, 100.54316081106663);
+
+        gd.setOnDirectionResponseListener(new GoogleDirection.OnDirectionResponseListener() {
+            public void onResponse(String status, Document doc, GoogleDirection gd) {
+                mDoc = doc;
+                mMap.addPolyline(gd.getPolyline(doc, 3, Color.RED));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(start, 15));
+                mMap.addMarker(new MarkerOptions().position(start)
+                        .icon(BitmapDescriptorFactory.defaultMarker(
+                                BitmapDescriptorFactory.HUE_GREEN)));
+
+                mMap.addMarker(new MarkerOptions().position(end)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.th_pekka)));
+            }
+        });
+
+        if (mCurrentLocation == null) {
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        }
+
+
+        //markers = mMap.addMarker(new MarkerOptions().position(new LatLng(59.324500, 18.068698)).icon(BitmapDescriptorFactory.fromResource(R.drawable.th_pekka)));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(59.324500, 18.068698), 13)); // stockholm
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+
+        Log.w(TAG, "building client");
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        createLocationRequest();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
+        stopLocationUpdates();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setUpMapIfNeeded();
+        if (mGoogleApiClient.isConnected()) {
+            startLocationUpdates();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+
+    public void onConnected(Bundle connectionHint) {
+        // Provides a simple way of getting a device's location and is well suited for
+        // applications that do not require a fine-grained location and that do not need location
+        // updates. Gets the best and most recent location currently available, which may be null
+        // in rare cases when a location is not available
+
+        if (mCurrentLocation == null) {
+            mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        }
+        Log.w(TAG, "connected");
+        this.drawDirection();
+        this.startLocationUpdates();
 
     }
 
+    @Override
+    public void onConnectionSuspended(int cause) {
+        // The connection to Google Play services was lost for some reason. We call connect() to
+        // attempt to re-establish the connection.
+        mGoogleApiClient.connect();
+        Log.i(TAG, "Connection suspended");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
+        // onConnectionFailed.
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+    }
+
+    protected void startLocationUpdates() {
+       LocationServices.FusedLocationApi.requestLocationUpdates(
+                 mGoogleApiClient, mLocationRequest, this);
+    }
+    protected void stopLocationUpdates() {
+        //LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+
+        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+
+        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+    }
+
+    public void onLocationChanged(Location location) {
+        mCurrentLocation = location;
+        Log.w(TAG, "location changed");
+        this.drawDirection();
+        //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+    }
+
+    public void drawDirection() {
+        Log.w(TAG, "in draw direction b: " + directionDrawn + " l: " + mCurrentLocation.toString());
+        if (!directionDrawn && mCurrentLocation != null && user_location != null) {
+            Log.w(TAG, "actually drawing");
+            start = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+            end = user_location;
+            gd.setLogging(true);
+            gd.request(start, end, GoogleDirection.MODE_WALKING);
+            directionDrawn = true;
+        }
+    }
 }

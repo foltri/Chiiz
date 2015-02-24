@@ -8,6 +8,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -16,6 +20,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -23,6 +28,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class PeopleNearby extends ActionBarActivity implements
@@ -31,10 +38,13 @@ public class PeopleNearby extends ActionBarActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-    protected static final String TAG = "location-updates-sample";
+    public final static String EXTRA_USERID = "com.example.folti.chiiz.USERID";
+    protected static final String TAG = "people-nearby";
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    private Marker markers;
+    private HashMap<Marker, String> markerUsers = new HashMap<>();
+    private Firebase fireRef;
+    private User me;
 
 
     /**
@@ -75,6 +85,37 @@ public class PeopleNearby extends ActionBarActivity implements
         setContentView(R.layout.activity_people_nearby);
         buildGoogleApiClient();
         setUpMapIfNeeded();
+
+
+        //Firebase init
+        Firebase.setAndroidContext(this);
+        //fireRef.push().setValue(post1);
+        fireRef = new Firebase("https://burning-inferno-7965.firebaseio.com/");
+
+        me = new User("jasper");
+
+        ValueEventListener users = fireRef.child("users").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot users) {
+                //System.out.println(snapshot.getValue());  //prints "Do you have data? You'll love Firebase."
+                for (DataSnapshot user : users.getChildren()) {
+                    if (user.getKey() != me.getId()) {
+                        if (mMap != null) {
+                            int r = getResources().getIdentifier("th_" + user.getKey(), "drawable", getPackageName());
+                            BitmapDescriptor b = BitmapDescriptorFactory.fromResource(r);
+                            Marker marker = mMap.addMarker(new MarkerOptions()
+                                            .position(new LatLng(user.child("position/lat").getValue(Double.class), user.child("position/lng").getValue(Double.class)))
+                                            .icon(b));
+                            markerUsers.put(marker, user.getKey());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError error) {
+            }
+        });
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -132,6 +173,8 @@ public class PeopleNearby extends ActionBarActivity implements
         if (mCurrentLocation != null) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
                     mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 13));
+        } else {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(59.3294, 18.0686), 13)); // stockholm
         }
 
 
@@ -241,10 +284,9 @@ public class PeopleNearby extends ActionBarActivity implements
     private void setUpMap() {
         mMap.setOnMarkerClickListener(this);
         mMap.setMyLocationEnabled(true);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(59.3294, 18.0686), 13));
-        markers = mMap.addMarker(new MarkerOptions().position(new LatLng(59.324500, 18.068698)).icon(BitmapDescriptorFactory.fromResource(R.drawable.th_pekka)));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(59.337240, 18.067411)).icon(BitmapDescriptorFactory.fromResource(R.drawable.th_lisa)));
 
+        //markers = mMap.addMarker(new MarkerOptions().position(new LatLng(59.324500, 18.068698)).icon(BitmapDescriptorFactory.fromResource(R.drawable.th_pekka)));
+        //mMap.addMarker(new MarkerOptions().position(new LatLng(59.337240, 18.067411)).icon(BitmapDescriptorFactory.fromResource(R.drawable.th_lisa)));
     }
 
 
@@ -277,11 +319,9 @@ public class PeopleNearby extends ActionBarActivity implements
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        if(marker.equals(markers)) {
-            Intent intent = new Intent(PeopleNearby.this, PhotoTarget.class);
-            //intent.putExtra(EXTRA_MESSAGE, message);
-            startActivity(intent);
-        }
+        Intent intent = new Intent(PeopleNearby.this, PhotoTarget.class);
+        intent.putExtra(EXTRA_USERID, markerUsers.get(marker));
+        startActivity(intent);
         return false;
     }
 }
