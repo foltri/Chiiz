@@ -384,7 +384,7 @@ public class PhotoTarget extends ActionBarActivity implements
     }
 
     public void drawDirection() {
-        Log.w(TAG, "in draw direction b: " + directionDrawn + " l: " + mCurrentLocation.toString());
+        //Log.w(TAG, "in draw direction b: " + directionDrawn + " l: " + mCurrentLocation.toString());
         if (!directionDrawn && mCurrentLocation != null && user_location != null) {
             Log.w(TAG, "actually drawing");
             start = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());

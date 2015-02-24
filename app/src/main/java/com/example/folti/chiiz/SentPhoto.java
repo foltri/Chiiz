@@ -58,9 +58,12 @@ public class SentPhoto extends ActionBarActivity {
         }
         iv.setImageBitmap(bitmap);
 
+        // resize bitmap
+        //bitmap =  Bitmap.createScaledBitmap(bitmap, 120, 120, false)
+
         //Uploading image to firebase
         ByteArrayOutputStream bYtE = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, bYtE);
+        bitmap.compress(Bitmap.CompressFormat.WEBP, 60, bYtE);
         //bmp.recycle();
         byte[] byteArray = bYtE.toByteArray();
         String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
